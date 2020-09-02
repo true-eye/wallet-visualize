@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <meta charset="utf-8" />
+    <title>Visualize Your TAU</title>
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css" />
+
+    <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/skeleton.css" />
+
+    <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+    <style>
+      .hidden {
+        display: none;
+      }
+
+      .loader {
+        border: 2px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 2px solid #3498db;
+        width: 20px;
+        height: 20px;
+        -webkit-animation: spin 0.5s linear infinite; /* Safari */
+        animation: spin 0.5s linear infinite;
+      }
+
+      /* Safari */
+      @-webkit-keyframes spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      #before .btn-connect {
+        display: inherit;
+        width: 232px;
+      }
+
+      #before .btn-loading {
+        display: none;
+        width: 232px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #before.loading .btn-connect {
+        display: none;
+      }
+
+      #before.loading .btn-loading {
+        display: flex;
+      }
+
+      .address {
+        width: 300px;
+        background: none !important;
+        color: white;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body onload="onLoad()">
+    <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <div class="container">
+      <div class="row" id="before">
+        <form class="twelve columns" style="margin-top: 15%" id="form">
+          <h1>Visualize your Lamden TAU</h1>
+          <h5>A fun lighthearted way to visualize your Lamden TAU to see what it’s worth.</h5>
+          <input
+            class="center address"
+            id="address_0"
+            type="text"
+            placeholder="Input your wallet address"
+            pattern="[0-9a-z]{64}"
+            oninvalid="this.setCustomValidity('Enter valid address!')"
+            oninput="this.setCustomValidity('')"
+          />
+          <input
+            class="center address"
+            id="address_1"
+            type="text"
+            placeholder="Input your wallet address"
+            pattern="[0-9a-z]{64}"
+            oninvalid="this.setCustomValidity('Enter valid address!')"
+            oninput="this.setCustomValidity('')"
+          />
+          <input
+            class="center address"
+            id="address_2"
+            type="text"
+            placeholder="Input your wallet address"
+            pattern="[0-9a-z]{64}"
+            oninvalid="this.setCustomValidity('Enter valid address!')"
+            oninput="this.setCustomValidity('')"
+          />
+          <button type="submit" id="connect" class="center btn-connect">CONNECT LAMDEN Wallet</button>
+          <button class="center btn-loading">
+            <div class="loader"></div>
+          </button>
+        </form>
+      </div>
+      <div class="row hidden" id="main">
+        <div class="twelve columns nonzero" style="margin-top: 15%">
+          <h1><span id="balance">300,083</span> Lamden TAU</h1>
+          <h5>That’s equivalent to...</h5>
+
+          <img id="image" src="images/bigmac.png" class="center" />
+
+          <h2><span id="count">8,808</span> <span id="label">Big Mac’s</span></h2>
+          <h5><span id="usd">$34,918.75</span></h5>
+        </div>
+
+        <div class="twelve columns zero hidden" style="margin-top: 15%; margin-bottom: 15%">
+          <h1>Oops, Oops, there's no TAU here</h1>
+        </div>
+
+        <div class="twelve columns nonzero">
+          <button onclick="pickRandom()" class="center">Visualize this a different way</button>
+        </div>
+
+        <div class="twelve">
+          <button onclick="goBack()" class="center">SEARCH ANOTHER ADDRESS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <script>
+      let balance = 0
+      let current = 0
+      let TAUPrice = 0.12
+
+      const items = [
+        {
+          index: 0,
+          label: `Big Mac's`,
+          image: 'images/bigmac.png',
+          price: 3.99
+        },
+        {
+          index: 1,
+          label: `iPhones`,
+          image: 'images/iphone.png',
+          price: 899
+        },
+        {
+          index: 2,
+          label: `months of Netflix`,
+          image: 'images/netflix.jpg',
+          price: 10
+        }
+      ]
+
+      var getParams = function (url) {
+        var params = {}
+        var parser = document.createElement('a')
+        parser.href = url
+        var query = parser.search.substring(1)
+        var vars = query.split('&')
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=')
+          params[pair[0]] = decodeURIComponent(pair[1])
+        }
+        return params
+      }
+
+      const validateAddress = (address) => {
+        if (!address || address.length !== 64) return false
+        return true
+      }
+
+      const onLoad = () => {
+        const params = getParams(window.location.href)
+        console.log(params)
+
+        var input_0 = document.getElementById('address_0')
+        var input_1 = document.getElementById('address_1')
+        var input_2 = document.getElementById('address_2')
+
+        if (!input_0 || !input_1 || !input_2 || !params) return false
+
+        input_0.value = params.key1 || ''
+        input_1.value = params.key2 || ''
+        input_2.value = params.key3 || ''
+
+        if (params.key1 || params.key2 || params.key3) nextPage(false)
+      }
+
+      const nextPage = (bUrlChange) => {
+        var input_0 = document.getElementById('address_0')
+        var input_1 = document.getElementById('address_1')
+        var input_2 = document.getElementById('address_2')
+
+        if (!input_0 || !input_1 || !input_2) return false
+
+        var address_0 = input_0.value
+        var address_1 = input_1.value
+        var address_2 = input_2.value
+
+        console.log('nextPage', bUrlChange)
+        if (bUrlChange) window.history.pushState('', '', `/?key1=${address_0}&key2=${address_1}&key3=${address_2}`)
+
+        input_0.setAttribute('disabled', true)
+        input_1.setAttribute('disabled', true)
+        input_2.setAttribute('disabled', true)
+
+        addClassName('#before', 'loading')
+
+        var promises = [
+          fetch(`https://api.coingecko.com/api/v3/simple/price?ids=lamden&vs_currencies=USD`),
+          fetch(`http://167.172.126.5:18080/contracts/currency/balances/?key=${address_0}`),
+          fetch(`http://167.172.126.5:18080/contracts/currency/balances/?key=${address_1}`),
+          fetch(`http://167.172.126.5:18080/contracts/currency/balances/?key=${address_2}`)
+        ]
+
+        Promise.all(promises)
+          .then((results) => {
+            Promise.all(results.map((result) => result.json()))
+              .then(([price, data_0, data_1, data_2]) => {
+                console.log(price, data_0, data_1, data_2)
+
+                TAUPrice = price.lamden.usd
+                balance = data_0.value + data_1.value + data_2.value
+              })
+              .catch((err) => {
+                console.log(err)
+                balance = 0
+              })
+              .finally(() => {
+                input_0.value = ''
+                input_1.value = ''
+                input_2.value = ''
+                setValues(balance, Math.floor(Math.random() * items.length))
+                addClassName('#before', 'hidden')
+                removeClassName('#main', 'hidden')
+
+                input_0.removeAttribute('disabled')
+                input_1.removeAttribute('disabled')
+                input_2.removeAttribute('disabled')
+                removeClassName('#before', 'loading')
+              })
+          })
+          .catch((err) => {
+            console.log(err)
+            balance = 0
+          })
+      }
+
+      document.getElementById('form').addEventListener('submit', (e) => {
+        e.preventDefault()
+
+        nextPage(true)
+        return false
+      })
+
+      const currencyFormat = (num) => {
+        return '$' + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+      }
+
+      const setValues = (balance, index) => {
+        current = index
+        if (balance == 0) {
+          addClassName('.nonzero', 'hidden')
+          removeClassName('.zero', 'hidden')
+        } else {
+          document.getElementById('balance').innerText = balance.toLocaleString()
+
+          var item = items[index] ? items[index] : items[0]
+          document.getElementById('image').setAttribute('src', item.image)
+          document.getElementById('count').innerText = parseInt((balance * TAUPrice) / item.price).toLocaleString()
+          document.getElementById('usd').innerText = currencyFormat(balance * TAUPrice)
+          document.getElementById('label').innerText = item.label
+          addClassName('.zero', 'hidden')
+          removeClassName('.nonzero', 'hidden')
+        }
+      }
+
+      const addClassName = (selector, className) => {
+        var elements = document.querySelectorAll(selector)
+        if (!elements || !elements.length) return
+
+        elements.forEach((elem) => {
+          if (!elem.classList.contains(className)) elem.classList.add(className)
+        })
+      }
+
+      const removeClassName = (selector, className) => {
+        var elements = document.querySelectorAll(selector)
+        if (!elements || !elements.length) return
+
+        elements.forEach((elem) => {
+          if (elem.classList.contains(className)) elem.classList.remove(className)
+        })
+      }
+
+      const goBack = () => {
+        removeClassName('#before', 'hidden')
+        addClassName('#main', 'hidden')
+      }
+
+      const pickRandom = () => {
+        console.log('picker another')
+        var availableItems = items.filter((item, index) => balance * TAUPrice >= item.price && index !== current)
+        if (!availableItems.length) {
+          setValues(balance, 0)
+        } else {
+          var next = Math.floor(Math.random() * availableItems.length)
+          setValues(balance, availableItems[next].index)
+        }
+      }
+    </script>
+  </body>
+</html>
+
+<!--
+Netflix for a year
+Apple iPhone
+Alienware Laptop
+Tesla Car
+Carribean Cruise Vacation
+Plane Ticket
+-->
