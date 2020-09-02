@@ -206,16 +206,15 @@
         var input_1 = document.getElementById('address_1')
         var input_2 = document.getElementById('address_2')
 
-        if (!input_0 || !input_1 || !input_2 || !params) return false
+        if (!input_0 || !input_1 || !input_2) return false
 
         input_0.value = params.key1 || ''
         input_1.value = params.key2 || ''
         input_2.value = params.key3 || ''
-
-        if (params.key1 || params.key2 || params.key3) nextPage(false)
       }
 
-      const nextPage = (bUrlChange) => {
+      document.getElementById('form').addEventListener('submit', (e) => {
+        e.preventDefault()
         var input_0 = document.getElementById('address_0')
         var input_1 = document.getElementById('address_1')
         var input_2 = document.getElementById('address_2')
@@ -226,8 +225,7 @@
         var address_1 = input_1.value
         var address_2 = input_2.value
 
-        console.log('nextPage', bUrlChange)
-        if (bUrlChange) window.history.pushState('', '', `/?key1=${address_0}&key2=${address_1}&key3=${address_2}`)
+        window.history.pushState('', '', `/?key1=${address_0}&key2=${address_1}&key3=${address_2}`)
 
         input_0.setAttribute('disabled', true)
         input_1.setAttribute('disabled', true)
@@ -273,12 +271,7 @@
             console.log(err)
             balance = 0
           })
-      }
 
-      document.getElementById('form').addEventListener('submit', (e) => {
-        e.preventDefault()
-
-        nextPage(true)
         return false
       })
 
